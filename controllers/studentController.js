@@ -2,20 +2,6 @@ import studentService from '../services/studentService.js';
 import { createCanvas, loadImage } from 'canvas';
 import { compareFaces } from '../utils/faceRecognition.js';
 
-
-// const registerStudent = async (req, res) => {
-//     const { name, roll_no } = req.body;
-//     const face_data = req.file.buffer; // Get the face image data
-
-//     try {
-//         const student = await studentService.registerStudent(name, roll_no, face_data);
-//         res.status(201).json(student); // This will now include capture_date_time
-//     } catch (error) {
-//         console.error(error);
-//         res.status(500).json({ error: 'Failed to register student' });
-//     }
-// };
-
 const registerStudent = async (name, roll_no, face_data) => {
     const capture_date_time = new Date(); // Get the current date and time
     const hour = capture_date_time.getHours();
