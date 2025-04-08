@@ -1,14 +1,5 @@
-import pkg from 'pg';
-const { Pool } = pkg;
+import pool from '../config/db.js';
 
-// PostgreSQL connection
-const pool = new Pool({
-    user: 'postgres', //PostgreSQL username
-    host: 'localhost',
-    database: 'attendanceDB', //database name
-    password: 'Rejaysobis@7397702155', //PostgreSQL password
-    port: 5432,
-});
 
 // Function to register a student
 const registerStudent = async (name, roll_no, face_data) => {
