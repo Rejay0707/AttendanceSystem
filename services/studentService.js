@@ -21,33 +21,52 @@ const registerStudent = async (name, roll_no, face_data) => {
 // const getAllStudents = async () => {
 //     return await studentModel.getAllStudents();
 // };
-const getAllStudents = async () => {
+
+// const getAllStudents = async () => {
+//     try {
+//         const result = await pool.query('SELECT name, roll_no, capture_date_time, morning_present, afternoon_present FROM students');
+//         const currentHour = new Date().getHours();
+
+//         const studentsWithSessionStatus = result.rows.map(student => {
+//             const captureDate = new Date(student.capture_date_time); // Create a Date object
+//             const formattedDate = captureDate.toLocaleDateString(); // Format date to a readable format
+
+//             // Determine attendance status
+//             const morningPresent = student.morning_present || (currentHour < 12 && captureDate.getHours() < 12);
+//             const afternoonPresent = student.afternoon_present || (currentHour >= 12 && captureDate.getHours() >= 12);
+
+//             return {
+//                 ...student,
+//                 formattedDate, // Add the formatted date to the student object
+//                 morning_present: morningPresent,
+//                 afternoon_present: afternoonPresent,
+//             };
+//         });
+
+//         return studentsWithSessionStatus;
+//     } catch (error) {
+//         console.error('Error getting all students:', error);
+//         throw error;
+//     }
+// };
+
+const getAllStudents = async (date) => {
     try {
-        const result = await pool.query('SELECT name, roll_no, capture_date_time, morning_present, afternoon_present FROM students');
-        const currentHour = new Date().getHours();
+        const result = await pool.query('SELECT name, roll_no, capture_date_time, morning_present, afternoon_present, face_data FROM students');
 
-        const studentsWithSessionStatus = result.rows.map(student => {
-            const captureDate = new Date(student.capture_date_time); // Create a Date object
-            const formattedDate = captureDate.toLocaleDateString(); // Format date to a readable format
-
-            // Determine attendance status
-            const morningPresent = student.morning_present || (currentHour < 12 && captureDate.getHours() < 12);
-            const afternoonPresent = student.afternoon_present || (currentHour >= 12 && captureDate.getHours() >= 12);
-
-            return {
-                ...student,
-                formattedDate, // Add the formatted date to the student object
-                morning_present: morningPresent,
-                afternoon_present: afternoonPresent,
-            };
+        const filteredStudents = result.rows.filter(student => {
+            const studentDate = new Date(student.capture_date_time).toISOString().split('T')[0];
+            return !date || studentDate === date;
         });
 
-        return studentsWithSessionStatus;
+        return filteredStudents;
     } catch (error) {
-        console.error('Error getting all students:', error);
+        console.error('Fetch error:', error);
         throw error;
     }
 };
+
+
 
 export default {
     registerStudent,

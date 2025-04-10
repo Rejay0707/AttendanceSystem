@@ -69,13 +69,18 @@ const verifyStudent = async (req, res) => {
 
 const getAllStudent1 = async (req, res) => {
     try {
-        const students = await studentService.getAllStudents();
+        const { date } = req.query; // 👈 get date from query
+        const students = await studentService.getAllStudents(date); // 👈 pass it to the service
         res.status(200).json(students);
     } catch (error) {
         console.error('Fetch error:', error);
         res.status(500).json({ message: 'Error fetching students', error: error.message });
     }
 };
+
+
+
+
 
 export default {
     registerStudent,
