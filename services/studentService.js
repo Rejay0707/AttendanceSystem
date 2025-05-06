@@ -12,28 +12,69 @@ const pool = new Pool({
 });
 
 
-// Service to register a student
+
+
 const registerStudent = async (name, roll_no, face_data) => {
-    return await studentModel.registerStudent(name, roll_no, face_data);
+    const capture_date_time = new Date(); // Get the current date and time
+    const hour = capture_date_time.getHours();
+
+    // Check if the student already exists for today
+    const existingStudent = await studentModel.getStudentByRollNoAndDate(roll_no, capture_date_time);
+
+    if (existingStudent) {
+        // Update the existing student's afternoon status if it's after noon
+        if (hour >= 12) {
+            const updatedStudent = await studentModel.updateAfternoonStatus(roll_no);
+            return updatedStudent;
+        } else {
+            // If it's morning, we can just return the existing student
+            return existingStudent;
+        }
+    } else {
+        // Register a new student
+        const result = await studentModel.registerStudent(name, roll_no, face_data, capture_date_time, true, false); // Mark morning as present, afternoon as absent
+        return result;
+    }
 };
 
 
 
 const getAllStudents = async (date) => {
     try {
-        const result = await pool.query('SELECT name, roll_no, capture_date_time, morning_present, afternoon_present, face_data FROM students');
+        const result = await studentModel.getAllStudents(); // Fetch all students from the model
 
-        const filteredStudents = result.rows.filter(student => {
+        // Filter and aggregate attendance data
+        const filteredStudents = result.filter(student => {
             const studentDate = new Date(student.capture_date_time).toISOString().split('T')[0];
             return !date || studentDate === date;
         });
 
-        return filteredStudents;
+        // Aggregate attendance data
+        const studentMap = {};
+        filteredStudents.forEach(student => {
+            const key = `${student.roll_no}-${new Date(student.capture_date_time).toISOString().split('T')[0]}`;
+            if (!studentMap[key]) {
+                studentMap[key] = {
+                    name: student.name,
+                    roll_no: student.roll_no,
+                    morning_present: student.morning_present,
+                    afternoon_present: student.afternoon_present,
+                    capture_date_time: student.capture_date_time,
+                };
+            } else {
+                studentMap[key].morning_present = studentMap[key].morning_present || student.morning_present;
+                studentMap[key].afternoon_present = studentMap[key].afternoon_present || student.afternoon_present;
+            }
+        });
+
+        return Object.values(studentMap);
     } catch (error) {
         console.error('Fetch error:', error);
         throw error;
     }
 };
+
+
 
 
 
