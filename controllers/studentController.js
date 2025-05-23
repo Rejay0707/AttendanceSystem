@@ -1,38 +1,30 @@
 import studentService from '../services/studentService.js';
+
 import { createCanvas, loadImage } from 'canvas';
 import { compareFaces } from '../utils/faceRecognition.js';
 import pool from '../config/db.js';
 
 
+
 const registerStudent = async (req, res) => {
     try {
-        const { name, roll_no } = req.body;
+        const { name, roll_no, grade, phone_number } = req.body;
         const faceFile = req.file;
 
         if (!faceFile) {
             return res.status(400).json({ message: 'Face image is required' });
         }
 
-        const face_data = faceFile.buffer; // Store raw binary or base64 if needed
-        const capture_date_time = new Date();
-        const hour = capture_date_time.getHours();
+        const face_data = faceFile.buffer;
+        const result = await studentService.registerStudent(name, roll_no, face_data, grade, phone_number);
 
-        const morning_present = hour < 12;
-        const afternoon_present = !morning_present;
-
-        const result = await pool.query(
-            `INSERT INTO students (name, roll_no, face_data, capture_date_time, morning_present, afternoon_present) 
-             VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
-            [name, roll_no, face_data, capture_date_time, morning_present, afternoon_present]
-        );
-
-        // Only return the row, not the full result object (avoids circular reference)
-        res.status(201).json(result.rows[0]);
+        res.status(201).json(result);
     } catch (error) {
-        console.error('Error inserting student:', error.message);
+        console.error('Registration error:', error.message);
         res.status(500).json({ message: 'Student registration failed', error: error.message });
     }
 };
+
 
 
 

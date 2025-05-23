@@ -13,29 +13,17 @@ const pool = new Pool({
 
 
 
-
-const registerStudent = async (name, roll_no, face_data) => {
-    const capture_date_time = new Date(); // Get the current date and time
-    const hour = capture_date_time.getHours();
-
-    // Check if the student already exists for today
+const registerStudent = async (name, roll_no, face_data, grade, phone_number) => {
+    const capture_date_time = new Date();
     const existingStudent = await studentModel.getStudentByRollNoAndDate(roll_no, capture_date_time);
 
     if (existingStudent) {
-        // Update the existing student's afternoon status if it's after noon
-        if (hour >= 12) {
-            const updatedStudent = await studentModel.updateAfternoonStatus(roll_no);
-            return updatedStudent;
-        } else {
-            // If it's morning, we can just return the existing student
-            return existingStudent;
-        }
+        return existingStudent;
     } else {
-        // Register a new student
-        const result = await studentModel.registerStudent(name, roll_no, face_data, capture_date_time, true, false); // Mark morning as present, afternoon as absent
-        return result;
+        return await studentModel.registerStudent(name, roll_no, face_data, grade, phone_number, capture_date_time);
     }
 };
+
 
 
 
